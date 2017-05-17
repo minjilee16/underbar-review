@@ -215,11 +215,17 @@
       return passed && (!!iterator(currentValue)); 
     }, true);
   };
-
+  
+  
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator) {
+  const none = function (collection, iterator = function (x) { return x; }) {
+    return _.every(collection, (ele) => !iterator(ele)); 
+  };
+  
+  _.some = function(collection, iterator ) {
     // TIP: There's a very clever way to re-use every() here.
+    return !none(collection, iterator);
   };
 
 
@@ -242,11 +248,31 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    let arr = Array.from(arguments).slice(1);
+    //[{g c}, {g7}]
+    // let objArr = Array.from(arguments).slice(0, 1);
+    // [{g:b}]; 
+    for (let index = 0; index < arr.length; index++) {
+      for (let key in arr[index]) {
+        obj[key] = arr[index][key];
+      }
+    }
+    return obj;
   };
+  
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    let arr = Array.from(arguments).slice(1); 
+    _.each(arr, function(item) {
+      _.each(item, (prop, key) => {
+        if (obj[key] === undefined) {
+          obj[key] = prop;
+        }
+      });
+    });
+    return obj; 
   };
 
 
@@ -290,6 +316,17 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    const memoizedFunc = function () {
+      const cache = memoizedFunc.data;
+      const key = JSON.stringify(arguments);
+      if (!cache[key]) {
+        cache[key] = func.apply(this, arguments);
+      }
+      console.log(cache);
+      return cache[key];
+    };
+    memoizedFunc.data = {};
+    return memoizedFunc;
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -299,6 +336,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    let args = Array.from(arguments).slice(2);
+    setTimeout(function () {
+      return func.apply(null, args);
+    }, wait);
   };
 
 
